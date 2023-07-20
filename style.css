@@ -1,0 +1,56 @@
+h3.question {
+    font-family: "Roboto", san-serif;
+    font-size: 24px;
+    text-align: center;
+    font-weight: 100;
+}
+
+
+#output {
+    width: 100px;
+}
+
+.btn {
+    position: absolute;
+    top: 70%;
+    left: 45%;
+    transform: translate(-50,-50);
+    
+}
+
+#execute {
+    background-color: white;
+    color: black;
+    width: 200px;
+    height: 50px;
+    border: 2px solid green;
+    border-radius: 8px;
+    font: bold;
+    font-family: "Roboto", san-serif;
+    transition-duration: 0.4s
+}
+
+#execute:hover {
+    background-color: green;
+    color: white;
+}
+
+.editor-container {
+    width: 900px;
+    height: 540px;
+    margin: 20px auto;
+    position: relative;
+
+}
+
+#editor {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    width: 100%;
+    font-size: 20px;
+    
+}
