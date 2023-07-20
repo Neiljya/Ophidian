@@ -12,82 +12,86 @@
 
 </head>
 <body>
-    <h3 class="question">Write a program</h3>
+    <h3 class="question">Ophidian Code Editor</h3>
     <div class="editor-container">
         <div id="editor">WRITE("Hello World!")</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.23.4/ace.js">
     </script>
-
-    <div class="box">
-      <div class="btn">
-        <button py-click="exe()" id="execute" class="py-button">Run</button>
+    <div width:105%; max-width:1920px; min-width:480px; height:200px; margin-left:-8px; overflow:hidden;>
+      <div class="box">
+        <div class="btn">
+          <button py-click="exe()" id="execute" class="py-button">Run</button>
+        </div>
       </div>
+  
+  
+      
+  
+      <script>
+          let editor = document.querySelector("#editor");
+  
+          var edit = ace.edit(editor, {
+              theme: 'ace/theme/cobalt',
+      
+          });
+          
+  
+  
+          function get_code(){
+            var code = edit.getSession().getValue();
+            return String(code);
+          }
+          
+  
+      </script>
+  
+      <py-config>
+          terminal = "auto"
+          docked = false
+          xterm = true
+  
+          [[fetch]]
+          files = ['main.py','Ophidian.py','string_with_arrows.py']
+      </py-config>
+      <p>Output:</p>
+      <p id = 'output' width="300" height="10"></p>
+      <py-script>
+          from js import get_code
+          import js
+          import asyncio
+          from pyscript import Element
+          import main
+          import Ophidian
+          import string_with_arrows
+          import time
+          
+  
+          def exe():
+            out = main.execute(get_code())
+            paragraph = Element("output")
+  
+            
+            paragraph.write(str(out))
+            
+  
+          async def adjust_term_size(columns, rows):
+            xterm = await js.document.querySelector('py-terminal').xtermReady
+            xterm.resize(columns, rows)
+        
+          asyncio.ensure_future(adjust_term_size(60,20))
+  
+        
+  
+  
+  
+      </py-script>
+  
+      <script src="ace.js"></script>
+
+
     </div>
-
-
-    
-
-    <script>
-        let editor = document.querySelector("#editor");
-
-        var edit = ace.edit(editor, {
-            theme: 'ace/theme/cobalt',
-    
-        });
-        
-
-
-        function get_code(){
-          var code = edit.getSession().getValue();
-          return String(code);
-        }
-        
-
-    </script>
-
-    <py-config>
-        terminal = "auto"
-        docked = false
-        xterm = true
-
-        [[fetch]]
-        files = ['main.py','Ophidian.py','string_with_arrows.py']
-    </py-config>
-    <p>Output:</p>
-    <p id = 'output' width="300" height="10"></p>
-    <py-script>
-        from js import get_code
-        import js
-        import asyncio
-        from pyscript import Element
-        import main
-        import Ophidian
-        import string_with_arrows
-        import time
-        
-
-        def exe():
-          out = main.execute(get_code())
-          paragraph = Element("output")
-
-          
-          paragraph.write(str(out))
-          
-
-        async def adjust_term_size(columns, rows):
-          xterm = await js.document.querySelector('py-terminal').xtermReady
-          xterm.resize(columns, rows)
-      
-        asyncio.ensure_future(adjust_term_size(60,20))
-
-      
-
-
-
-    </py-script>
-
-    <script src="ace.js"></script>
+   
 </body>
 </html>
