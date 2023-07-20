@@ -4,14 +4,14 @@ import os
 import math
 
 
-######################### CONSTANTS ################################
-
+################### CONSTANTS #########################
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters
 LETTERS_DIGITS = LETTERS + DIGITS
 
 
-######################### ERROR HANDLING ################################
+
+################### ERROR HANDLING #########################
 
 class Error:
     def __init__(self, pos_start, pos_end, error_name, details):
@@ -63,7 +63,9 @@ class RTError(Error):
 
 
 
-######################### POS #################################
+#######################################
+# POSITION
+#######################################
 
 class Position:
     def __init__(self, idx, ln, col, fn, ftxt):
@@ -87,7 +89,9 @@ class Position:
         return Position(self.idx, self.ln, self.col, self.fn, self.ftxt)
 
 
-######################### TOKENS ################################
+#######################################
+# TOKENS
+#######################################
 
 # Data Types
 TT_INT = 'INT'
@@ -140,10 +144,10 @@ KEYWORDS = [
     'DO',
     'ELSEIF',
     'ELSE',
-    'FOR',
+    'for',
     'TO',
     'COUNT_BY',
-    'WHILE',
+    'while',
     'FROM',
     'FUNCTION',
     'CREATE',
@@ -151,8 +155,8 @@ KEYWORDS = [
     'END',
     'RETURN',
     'CONTINUE',
-    'REPEAT',
-    'BREAK'
+    'BREAK',
+    'named'
 
 ]
 
@@ -179,7 +183,9 @@ class Token:
         return f'{self.type}'
 
 
-######################### LEXER ################################
+#######################################
+# LEXER
+#######################################
 
 class Lexer:
     def __init__(self, fn, text):
@@ -193,7 +199,6 @@ class Lexer:
         self.pos.advance(self.current_char)
         self.current_char = self.text[self.pos.idx] if self.pos.idx < len(self.text) else None
 
-    
     def make_tokens(self):
         tokens = []
 
@@ -414,7 +419,9 @@ class Lexer:
         self.advance()
 
 
-######################### NODES #################################
+#######################################
+# NODES
+#######################################
 
 class String_Node:
     def __init__(self,token):
@@ -568,7 +575,7 @@ class Break_Node:
 
 
 
-######################### PARSE RESULT ################################
+########## PARSE #################
 
 class ParseResult:
     def __init__(self):
@@ -610,7 +617,9 @@ class ParseResult:
 
 
 
-######################### PARSER ################################
+#######################################
+# PARSER
+#######################################
 
 class Parser:
     def __init__(self, tokens):
@@ -700,7 +709,7 @@ self.advance()
                 arg_nodes.append((res.register(self.expr())))
                 if res.error: return res.fail(InvalidSyntaxError(
                     self.current_tok.pos_start, self.current_tok.pos_end,
-                    "Expected ')', 'VAR', 'IF', 'FOR', 'WHILE', 'FUNCTION', int, float, identifier, '+', '-', '[', '(', or 'NOT'"
+                    "Expected ')', 'var', 'IF', 'for', 'while', 'FUNCTION', int, float, identifier, '+', '-', '[', '(', or 'NOT'"
                 ))
 
                 while self.current_tok.type == TT_COMMA:
@@ -774,12 +783,12 @@ self.advance()
             if res.error: return res
             return res.success(if_expr)
 
-        elif tok.matches(TT_KEYWORD, "FOR"):
+        elif tok.matches(TT_KEYWORD, "for"):
             for_expr = res.register(self.for_expr())
             if res.error: return res
             return res.success(for_expr)
 
-        elif tok.matches(TT_KEYWORD, "WHILE"):
+        elif tok.matches(TT_KEYWORD, "while"):
             while_expr = res.register(self.while_expr())
             if res.error: return res
             return res.success(while_expr)
@@ -798,7 +807,7 @@ self.advance()
 
         return res.fail(InvalidSyntaxError(tok.pos_start,
                                             tok.pos_end,
-                                            "<Expected int, float, identifier, '+', '-', '(', '[', 'IF', 'FOR', 'WHILE', 'FUNCTION'>"))
+                                            "<Expected int, float, identifier, '+', '-', '(', '[', 'IF', 'for', 'while', 'FUNCTION'>"))
 
 
             
@@ -836,7 +845,7 @@ self.advance()
             element_nodes.append(res.register(self.expr()))
             if res.error: return res.fail(InvalidSyntaxError(
                 self.current_tok.pos_start, self.current_tok.pos_end,
-                "Expected ']', 'VAR', 'IF', 'FOR', 'WHILE', 'FUNCTION', int, float, identifier, '+', '-', '[', '(', or 'NOT'"
+                "Expected ']', 'var', 'IF', 'for', 'while', 'FUNCTION', int, float, identifier, '+', '-', '[', '(', or 'NOT'"
             ))
 
             while self.current_tok.type == TT_COMMA:
@@ -876,7 +885,7 @@ self.advance()
         if res.error:
             return res.fail(InvalidSyntaxError(
                 self.current_tok.pos_start, self.current_tok.pos_end,
-                "Expected 'VAR', 'IF', 'FOR', 'WHILE', 'FUN', int, float, identifier, '+', '-', '[', '(', 'NOT'"
+                "Expected 'var', 'IF', 'for', 'while', 'FUN', int, float, identifier, '+', '-', '[', '(', 'NOT'"
 
 
             ))
@@ -887,10 +896,10 @@ self.advance()
         res = ParseResult()
 
         # Look for 'FOR'
-        if not self.current_tok.matches(TT_KEYWORD, 'FOR'):
+        if not self.current_tok.matches(TT_KEYWORD, 'for'):
             return res.fail(InvalidSyntaxError(
                 self.current_tok.pos_start, self.current_tok.pos_end,
-                f"Expected 'FOR'"
+                f"Expected 'for'"
             ))
 
         res.register_advancement()
@@ -946,10 +955,10 @@ self.advance()
 
 
 
-        if not self.current_tok.matches(TT_KEYWORD, 'REPEAT'):
+        if not self.current_tok.matches(TT_KEYWORD, 'DO'):
             return res.fail(InvalidSyntaxError(
                 self.current_tok.pos_start, self.current_tok.pos_end,
-                f"Expected 'REPEAT'"
+                f"Expected 'DO'"
             ))
 
         res.register_advancement()
@@ -982,10 +991,10 @@ self.advance()
     def while_expr(self):
         res = ParseResult()
 
-        if not self.current_tok.matches(TT_KEYWORD, 'WHILE'):
+        if not self.current_tok.matches(TT_KEYWORD, 'while'):
             return res.fail(InvalidSyntaxError(
                 self.current_tok.pos_start, self.current_tok.pos_end,
-                f"Expected 'WHILE'"
+                f"Expected 'while'"
             ))
 
         res.register_advancement()
@@ -994,10 +1003,10 @@ self.advance()
         condition = res.register(self.expr())
         if res.error: return res
 
-        if not self.current_tok.matches(TT_KEYWORD, 'REPEAT'):
+        if not self.current_tok.matches(TT_KEYWORD, 'DO'):
             return res.fail(InvalidSyntaxError(
                 self.current_tok.pos_start, self.current_tok.pos_end,
-                f"Expected 'REPEAT'"
+                f"Expected 'DO'"
             ))
 
         res.register_advancement()
@@ -1171,6 +1180,7 @@ self.advance()
         res.register_advancement()
         self.advance()
 
+
         if self.current_tok.type == TT_IDENTIFIER:
             var_name_tok = self.current_tok
             res.register_advancement()
@@ -1258,6 +1268,7 @@ self.advance()
         res.register_advancement()
         self.advance()
 
+
         return res.success(FuncDef_Node(
             var_name_tok, arg_name_toks, body,
             False
@@ -1330,7 +1341,7 @@ self.advance()
         if res.error:
             return res.fail(InvalidSyntaxError(
                 self.current_tok.pos_start, self.current_tok.pos_end,
-                "Expected 'RETURN','CREATE', 'CONTINUE', 'BREAK_LOOP', 'VAR', 'IF', 'FOR', 'WHILE', 'FUN', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
+                "Expected 'RETURN','CREATE', 'CONTINUE', 'BREAK_LOOP', 'var', 'IF', 'for', 'while', 'FUN', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
 
             ))
         return res.success(expr)
@@ -1374,12 +1385,12 @@ self.advance()
         if res.error and self.current_tok.matches(TT_KEYWORD, 'FUNCTION'):
             return res.fail(InvalidSyntaxError(
                 self.current_tok.pos_start, self.current_tok.pos_end,
-                "Expected 'CREATE' before 'FUNCTION'"
+                "Expected 'crate' before 'FUNCTION'"
             ))
         elif res.error:
             return res.fail(InvalidSyntaxError(
                 self.current_tok.pos_start, self.current_tok.pos_end,
-                "Expected 'VAR', 'IF', 'for', 'WHILE', 'FUN', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
+                "Expected 'var', 'IF', 'for', 'while', 'FUNCTION', int, float, identifier, '+', '-', '(', '[' or 'NOT'"
             ))
 
 
@@ -1409,7 +1420,9 @@ self.advance()
 
 
 
-######################### RUNTIME ################################
+#######################################
+# RUNTIME RESULT
+#######################################
 
 class RTResult:
     def __init__(self):
@@ -1464,9 +1477,8 @@ class RTResult:
             self.break_loop
         )
 
-#######################################
-# VALUES
-#######################################
+########## PARSE #################
+
 class Value:
     def __init__(self):
         self.set_pos()
@@ -1797,12 +1809,12 @@ class Built_In_Functions(Main_Function):
         return RTResult().success(String(str(ex_ctx.symbols.get('val'))))
     execute_print_return.arg_names = ["val"]
 
-    def execute_input(self,exec_ctx):
+    def execute_input(self,ex_ctx):
         text = input()
         return RTResult().success(String(text))
     execute_input.arg_names = []
 
-    def execute_input_int(self,exec_ctx):
+    def execute_input_int(self,ex_ctx):
         while True:
             text = input()
             try:
@@ -1815,10 +1827,7 @@ class Built_In_Functions(Main_Function):
 
     def execute_clear(self, ex_ctx):
         # Check if platform is windows
-        if os.name == 'nt':
-            os.system('cls')
-        else:
-            os.system('clear')
+        os.system('cls' if os.name == 'nt' else 'clear')
         return RTResult().success(Number.null)
     execute_clear.arg_names = []
 
@@ -1900,15 +1909,24 @@ class Built_In_Functions(Main_Function):
     execute_combine.arg_names = ['list_A', 'list_B']
 
     def execute_len(self, ex_ctx):
-        list_ = ex_ctx.symbols.get('list')
+        arg_ = ex_ctx.symbols.get('arg')
 
-        if not isinstance(list_, List):
+        if isinstance(arg_, List):
+            return RTResult().success(Number(len(arg_.elements)))
+        elif isinstance(arg_, String):
+            str_list = []
+            for i in range(arg_.length()):
+                str_list.append(arg_.value[i])
+            return RTResult().success(Number(len(str_list)))
+        else:
             return RTResult().fail(RTError(
                 self.pos_start, self.pos_end,
-                "Argument must be a list", ex_ctx
+                "Argument must be a string or a list", ex_ctx
             ))
 
-        return RTResult().success(Number(len(list_.elements)))
+
+
+    execute_len.arg_names = ["arg"]
 
     def execute_run(self, ex_ctx):
         fn = ex_ctx.symbols.get('fn')
@@ -1959,10 +1977,14 @@ Built_In_Functions.len = Built_In_Functions('len')
 Built_In_Functions.run = Built_In_Functions('run')
 
 
+
 class String(Value):
     def __init__(self,value):
         super().__init__()
         self.value = value
+
+    def length(self):
+        return len(self.value)
 
     def add_to(self,other):
         if isinstance(other, String):
@@ -2048,7 +2070,9 @@ class List(Value):
         return f'[{", ".join([str(i) for i in self.elements])}]'
 
 
-######################### CTX ################################
+#######################################
+# CONTEXT
+#######################################
 
 class Context:
     def __init__(self,display_name,parent=None,parent_entry_pos=None):
@@ -2057,7 +2081,9 @@ class Context:
         self.parent_entry_pos = parent_entry_pos
         self.symbols = None
 
-######################### SYMBOLS ################################
+#######################################
+# SYMBOLS
+#######################################
 
 class Symbols:
     def __init__(self, parent=None):
@@ -2384,31 +2410,38 @@ class Interpreter:
 
 
 
-############################# RUN ####################################
+#######################################
+# RUN
+#######################################
 
 
+GLOBAL_SYMBOLS = {
+    "NONE": Number.null,
+    "FALSE": Number.false,
+    "TRUE": Number.true,
+    "MATH_PI": Number.math_PI,
+    "WRITE": Built_In_Functions.print,
+    "WRITE_RETURN": Built_In_Functions.print_ret,
+    "input": Built_In_Functions.input,
+    "input_int": Built_In_Functions.input_int,
+    "CLEAR": Built_In_Functions.clear,
+    "CLS": Built_In_Functions.clear,
+    "IS_NUMBER": Built_In_Functions.is_num,
+    "IS_BOOLEAN": Built_In_Functions.is_bool,
+    "IS_STRING": Built_In_Functions.is_str,
+    "IS_LIST": Built_In_Functions.is_list,
+    "IS_FUNCTION": Built_In_Functions.is_func,
+    "APPEND": Built_In_Functions.append,
+    "REMOVE": Built_In_Functions.pop,
+    "COMBINE": Built_In_Functions.combine,
+    "LENGTH_OF": Built_In_Functions.len,
+    "RUN": Built_In_Functions.run,
+}
+
+# Set the global symbols using the dictionary
 global_symbols = Symbols()
-global_symbols.set("NONE", Number.null)
-global_symbols.set("FALSE", Number.false)
-global_symbols.set("TRUE", Number.true)
-global_symbols.set("MATH_PI", Number.math_PI)
-global_symbols.set("WRITE", Built_In_Functions.print)
-global_symbols.set("WRITE_RETURN", Built_In_Functions.print_ret)
-global_symbols.set("GET_INPUT", Built_In_Functions.input)
-global_symbols.set("GET_INPUT_INT", Built_In_Functions.input_int)
-global_symbols.set("CLEAR", Built_In_Functions.clear)
-global_symbols.set("CLS", Built_In_Functions.clear)
-global_symbols.set("IS_NUMBER", Built_In_Functions.is_num)
-global_symbols.set("IS_BOOLEAN", Built_In_Functions.is_bool)
-global_symbols.set("IS_STRING", Built_In_Functions.is_str)
-global_symbols.set("IS_LIST", Built_In_Functions.is_list)
-global_symbols.set("IS_FUNCTION", Built_In_Functions.is_func)
-global_symbols.set("INSERT", Built_In_Functions.append)
-global_symbols.set("REMOVE", Built_In_Functions.pop)
-global_symbols.set("COMBINE", Built_In_Functions.combine)
-global_symbols.set("LENGTH_OF", Built_In_Functions.len)
-global_symbols.set("RUN", Built_In_Functions.run)
-
+for symbol, value in GLOBAL_SYMBOLS.items():
+    global_symbols.set(symbol, value)
 
 def run(fn, text):
     lexer = Lexer(fn, text)
