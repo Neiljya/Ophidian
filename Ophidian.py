@@ -3,7 +3,7 @@ import string
 import os
 import math
 
-
+# Thank you CodePulse
 ################### CONSTANTS #########################
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters
