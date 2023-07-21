@@ -417,10 +417,16 @@ class Lexer:
         # advancing past the '#'
         self.advance()
 
-        while self.current_char != '\n':
-            self.advance()
+        # Check if the current character is not None (end of input)
+        # and if it's a new line character before advancing
+        if self.current_char and self.current_char != '\n':
+            while self.current_char and self.current_char != '\n':
+                self.advance()
 
-        self.advance()
+        # Check if the current character is None (end of input)
+        # or if it's a new line character before advancing
+        if self.current_char == '\n':
+            self.advance()
 
 
 #######################################
