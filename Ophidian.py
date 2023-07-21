@@ -1,17 +1,23 @@
+# Thank you CodePulse
+
 from string_with_arrows import *
 import string
 import os
 import math
 
-# Thank you CodePulse
-################### CONSTANTS #########################
+
+#######################################
+# CONSTANTS
+#######################################
+
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters
 LETTERS_DIGITS = LETTERS + DIGITS
 
 
-
-################### ERROR HANDLING #########################
+#######################################
+# ERRORS
+#######################################
 
 class Error:
     def __init__(self, pos_start, pos_end, error_name, details):
@@ -336,7 +342,7 @@ class Lexer:
                # perform check to see if matches escape keywords
                # then add escaped string to main string
 
-               string += self.current_char.get(self.current_char, self.current_char)
+               string += escape_chars.get(self.current_char, self.current_char)
            else:
                 if self.current_char == '\\':
                     esc_char = True
@@ -1805,6 +1811,8 @@ class Built_In_Functions(Main_Function):
         return RTResult().success(Number.null)
     execute_print.arg_names = ["val"]
 
+
+
     def execute_print_return(self, ex_ctx):
         return RTResult().success(String(str(ex_ctx.symbols.get('val'))))
     execute_print_return.arg_names = ["val"]
@@ -1846,10 +1854,55 @@ class Built_In_Functions(Main_Function):
         return RTResult().success(Number.true if is_str else Number.false)
     execute_is_str.arg_names = ['val']
 
+    def execute_to_string(self, ex_ctx):
+        string = String(str(ex_ctx.symbols.get('val')))
+        return RTResult().success(string)
+    execute_to_string.arg_names = ['val']
+
+    def execute_to_num(self, ex_ctx):
+        string = str(ex_ctx.symbols.get('val'))
+        try:
+            try:
+                num = Number(int(string))
+            except:
+                num = Number(float(string))
+            return RTResult().success(num)
+        except:
+            return RTResult().fail(RTError(
+                self.pos_start, self.pos_end, "String argument must be a number", ex_ctx
+            ))
+    execute_to_num.arg_names = ['val']
+
+    def execute_index_of(self, ex_ctx):
+        val = ex_ctx.symbols.get('val')
+        idx = ex_ctx.symbols.get('idx')
+
+        if isinstance(val, List) or isinstance(val, String):
+            if isinstance(idx, Number) and type(idx.value) == int:
+                if idx.value < len(str(val)) and idx.value >= 0:
+                    if isinstance(val, String):
+                        return RTResult().success(String(str(val)[idx.value]))
+                    else:
+                        return RTResult().success(val[idx.value])
+                else:
+                    return RTResult().fail(RTError(
+                        self.pos_start, self.pos_end, "Index is out of range", ex_ctx
+                    ))
+            else:
+                return RTResult().fail(RTError(
+                    self.pos_start, self.pos_end, "Second argument must be an integer", ex_ctx
+                ))
+        else:
+            return RTResult().fail(RTError(
+                self.pos_start, self.pos_end, "First argument must be a list or string", ex_ctx
+            ))
+    execute_index_of.arg_names = ['val', 'idx']
+
     def execute_is_list(self, ex_ctx):
         is_list = isinstance(ex_ctx.symbols.get("val"), List)
         return RTResult().success(Number.true if is_list else Number.false)
     execute_is_list.arg_names = ['val']
+
 
     def execute_is_func(self, ex_ctx):
         is_func = isinstance(ex_ctx.symbols.get("value"), Main_Function)
@@ -1975,6 +2028,9 @@ Built_In_Functions.combine = Built_In_Functions('combine')
 Built_In_Functions.is_bool = Built_In_Functions('is_bool')
 Built_In_Functions.len = Built_In_Functions('len')
 Built_In_Functions.run = Built_In_Functions('run')
+Built_In_Functions.to_str = Built_In_Functions('to_string')
+Built_In_Functions.index_of = Built_In_Functions('index_of')
+Built_In_Functions.to_num = Built_In_Functions('to_num')
 
 
 
@@ -2436,13 +2492,15 @@ GLOBAL_SYMBOLS = {
     "COMBINE": Built_In_Functions.combine,
     "LENGTH_OF": Built_In_Functions.len,
     "RUN": Built_In_Functions.run,
+    "TO_STRING": Built_In_Functions.to_str,
+    "INDEX_OF": Built_In_Functions.index_of,
+    "TO_NUMBER": Built_In_Functions.to_num
 }
 
 # Set the global symbols using the dictionary
 global_symbols = Symbols()
 for symbol, value in GLOBAL_SYMBOLS.items():
     global_symbols.set(symbol, value)
-
 def run(fn, text):
     lexer = Lexer(fn, text)
     tokens, error = lexer.make_tokens()
