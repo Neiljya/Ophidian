@@ -71,7 +71,8 @@
           def exe():
             val = get_code()
             if val.isspace() == False:
-              out = main.execute(get_code()+"")
+              # Brute force method to dodge an error i dont know how to fix
+              out = main.execute("WRITE(\"\")\n"+get_code())
               paragraph = Element("output")
     
               
