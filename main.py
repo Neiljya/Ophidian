@@ -16,13 +16,12 @@ def execute(code):
     if error:
        print("")
        print(error.as_string())
-       print("=-=-=-=- END OF OUTPUT -=-=-=-=")
+
     elif result:
         if len(result.elements) == 1:
             print("")
             print(repr(result.elements[0]))
-            print("=-=-=-=- END OF OUTPUT -=-=-=-=")
+
         else:
             print("")
             print(repr(result))
-            print("=-=-=-=- END OF OUTPUT -=-=-=-=")
