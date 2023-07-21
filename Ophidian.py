@@ -1,5 +1,3 @@
-# Thank you CodePulse
-
 from string_with_arrows import *
 import string
 import os
@@ -1883,7 +1881,18 @@ class Built_In_Functions(Main_Function):
                     if isinstance(val, String):
                         return RTResult().success(String(str(val)[idx.value]))
                     else:
-                        return RTResult().success(val[idx.value])
+                        r_val = val.get_by(Number(idx.value))
+                        if isinstance(r_val[0], Number):
+                            return RTResult().success(Number(r_val[0]))
+                        elif isinstance(r_val[0], String):
+                            return RTResult().success(String(r_val[0]))
+                        elif isinstance(r_val[0], List):
+
+                            return RTResult().success(r_val[0])
+                        else:
+                            return RTResult().fail(RTError(
+                                self.pos_start, self.pos_end, "Invalid List Objects: How did you manage to do this?", ex_ctx
+                            ))
                 else:
                     return RTResult().fail(RTError(
                         self.pos_start, self.pos_end, "Index is out of range", ex_ctx
@@ -1939,7 +1948,7 @@ class Built_In_Functions(Main_Function):
             element = list_.elements.pop(idx.value)
         except:
             return RTResult().fail(RTError(
-                self.pos_start, self.pos_end, "Could not remove element because index value is out of list range"
+                self.pos_start, self.pos_end, "Could not remove element because index value is out of list range", ex_ctx
 
             ))
 
