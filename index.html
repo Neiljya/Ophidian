@@ -70,18 +70,14 @@
   
           def exe():
             val = get_code()
-            paragraph = Element("output")
             if val.isspace() == False:
-              
-              out = main.execute(get_code())
+              out = main.execute(get_code()+"")
+              paragraph = Element("output")
+    
               
               paragraph.write(str(out))
             else:
-              # Brute force method to dodge an error I can't fix
-              out = main.execute("\n WRITE(\"\")")
-              paragraph.write(str(out))
-        
-
+              paragraph.write("")
             
   
           async def adjust_term_size(columns, rows):
