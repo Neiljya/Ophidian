@@ -2,6 +2,7 @@ from string_with_arrows import *
 import string
 import os
 import math
+import random
 
 #######################################
 # CONSTANTS
@@ -721,7 +722,7 @@ self.advance()
                 arg_nodes.append((res.register(self.expr())))
                 if res.error: return res.fail(InvalidSyntaxError(
                     self.current_tok.pos_start, self.current_tok.pos_end,
-                    "Expected ')', 'var', 'IF', 'FOR', 'WHILE', 'FUNCTION', int, float, identifier, '+', '-', '[', '(', or 'NOT'"
+                    "Expected ')', 'VAR', 'IF', 'FOR', 'WHILE', 'FUNCTION', int, float, identifier, '+', '-', '[', '(', or 'NOT'"
                 ))
 
                 while self.current_tok.type == TT_COMMA:
@@ -2069,6 +2070,53 @@ class Built_In_Functions(Main_Function):
             ))
     execute_round.arg_names = ['val','places']
 
+    def execute_random(self,ex_ctx):
+        lower_bound = ex_ctx.symbols.get('lower')
+        upper_bound = ex_ctx.symbols.get('upper')
+
+        if isinstance(lower_bound, Number):
+            try:
+                lower = int(str(lower_bound))
+            except:
+                return RTResult().fail(RTError(
+                    self.pos_start, self.pos_end, "First argument must be a whole number", ex_ctx
+                ))
+            if isinstance(upper_bound, Number):
+                try:
+                    upper = int(str(upper_bound))
+                except:
+                    return  RTResult().fail(RTError(
+                        self.pos_start, self.pos_end, "Second argument must be a whole number", ex_ctx
+                    ))
+                return RTResult().success(Number(random.randint(lower, upper)))
+        else:
+            return RTResult().fail(RTError(
+                self.pos_start, self.pos_end, "First argument must be a number", ex_ctx
+            ))
+    execute_random.arg_names = ['lower','upper']
+
+    def execute_random_decimal(self,ex_ctx):
+        lower_bound = ex_ctx.symbols.get('lower')
+        upper_bound = ex_ctx.symbols.get('upper')
+
+        if isinstance(lower_bound, Number):
+            try:
+                lower = int(str(lower_bound))
+            except:
+                lower = float(str(lower_bound))
+            if isinstance(upper_bound, Number):
+                try:
+                    upper = int(str(upper_bound))
+                except:
+                    upper = float(str(upper_bound))
+                return RTResult().success(Number(random.uniform(lower, upper)))
+        else:
+            return RTResult().fail(RTError(
+                self.pos_start, self.pos_end, "First argument must be a number", ex_ctx
+            ))
+
+    execute_random_decimal.arg_names = ['lower', 'upper']
+
     def execute_round_down(self, ex_ctx):
         val = ex_ctx.symbols.get('val')
         if isinstance(val, Number):
@@ -2156,6 +2204,9 @@ Built_In_Functions.abs = Built_In_Functions('abs')
 Built_In_Functions.sqrt = Built_In_Functions('sqrt')
 Built_In_Functions.round_down = Built_In_Functions('round_down')
 Built_In_Functions.round_up = Built_In_Functions('round_up')
+Built_In_Functions.random = Built_In_Functions('random')
+Built_In_Functions.random_decimal = Built_In_Functions('random_decimal')
+
 
 
 
@@ -2630,7 +2681,9 @@ GLOBAL_SYMBOLS = {
     "ABSOLUTE_VAL": Built_In_Functions.abs,
     "SQUARE_ROOT": Built_In_Functions.sqrt,
     "ROUND_DOWN": Built_In_Functions.round_down,
-    "ROUND_UP": Built_In_Functions.round_up
+    "ROUND_UP": Built_In_Functions.round_up,
+    "RANDOM" : Built_In_Functions.random,
+    "RANDOM_DECIMAL": Built_In_Functions.random_decimal,
 }
 
 # Set the global symbols using the dictionary
