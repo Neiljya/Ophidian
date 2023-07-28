@@ -163,7 +163,8 @@ KEYWORDS = [
     'RETURN',
     'CONTINUE',
     'BREAK',
-    'named'
+    'named',
+    'REPEAT'
 
 ]
 
@@ -953,10 +954,10 @@ self.advance()
         else:
             step_value = None
 
-        if not self.current_tok.matches(TT_KEYWORD, 'DO'):
+        if not self.current_tok.matches(TT_KEYWORD, 'REPEAT'):
             return res.fail(InvalidSyntaxError(
                 self.current_tok.pos_start, self.current_tok.pos_end,
-                f"Expected 'DO'"
+                f"Expected 'REPEAT'"
             ))
 
         res.register_advancement()
@@ -1003,10 +1004,10 @@ self.advance()
         condition = res.register(self.expr())
         if res.error: return res
 
-        if not self.current_tok.matches(TT_KEYWORD, 'DO'):
+        if not self.current_tok.matches(TT_KEYWORD, 'REPEAT'):
             return res.fail(InvalidSyntaxError(
                 self.current_tok.pos_start, self.current_tok.pos_end,
-                f"Expected 'DO'"
+                f"Expected 'REPEAT'"
             ))
 
         res.register_advancement()
@@ -1530,6 +1531,7 @@ class Value:
     def is_true(self):
         return False
 
+
     def illegal_op(self, other=None):
         if not other: other = self
         return RTError(
@@ -1882,6 +1884,62 @@ class Built_In_Functions(Main_Function):
 
     execute_to_num.arg_names = ['val']
 
+    def execute_max_value(self, ex_ctx):
+        nums = ex_ctx.symbols.get('val')
+        if isinstance(nums, List):
+            list_ = []
+            for i in range(0, len(nums.elements)):
+                try:
+                    try:
+                        list_.append(int(str(nums.get_by(Number(i))[0])))
+                    except:
+                        list_.append(float(str(nums.get_by(Number(i))[0])))
+                except:
+                    return RTResult().fail(RTError(
+                        self.pos_start, self.pos_end, "All list elements must be numbers", ex_ctx
+                    ))
+
+
+            max_val = max(list_)
+            return RTResult().success(Number(float(max_val)))
+
+
+
+
+        else:
+            return RTResult().fail(RTError(
+                self.pos_start, self.pos_end, "Argument must be a list", ex_ctx
+            ))
+    execute_max_value.arg_names = ['val']
+
+    def execute_min_value(self, ex_ctx):
+        nums = ex_ctx.symbols.get('val')
+        if isinstance(nums, List):
+            list_ = []
+            for i in range(0, len(nums.elements)):
+                try:
+                    try:
+                        list_.append(int(str(nums.get_by(Number(i))[0])))
+                    except:
+                        list_.append(float(str(nums.get_by(Number(i))[0])))
+                except:
+                    return RTResult().fail(RTError(
+                        self.pos_start, self.pos_end, "All list elements must be numbers", ex_ctx
+                    ))
+
+
+            min_val = min(list_)
+            return RTResult().success(Number(float(min_val)))
+
+
+
+
+        else:
+            return RTResult().fail(RTError(
+                self.pos_start, self.pos_end, "Argument must be a list", ex_ctx
+            ))
+    execute_min_value.arg_names = ['val']
+
     def execute_index_of(self, ex_ctx):
         val = ex_ctx.symbols.get('val')
         idx = ex_ctx.symbols.get('idx')
@@ -1933,60 +1991,7 @@ class Built_In_Functions(Main_Function):
 
     execute_is_func.arg_names = ['val']
 
-    def execute_append(self, ex_ctx):
-        list_ = ex_ctx.symbols.get('list')
-        value = ex_ctx.symbols.get('val')
 
-        if not isinstance(list_, List):
-            return RTResult().fail(RTError(
-                self.pos_start, self.pos_end, "First argument must be list object", ex_ctx
-            ))
-
-        list_.elements.append(value)
-        return RTResult().success(Number.null)
-
-    execute_append.arg_names = ['list', 'val']
-
-    def execute_pop(self, ex_ctx):
-        list_ = ex_ctx.symbols.get('list')
-        idx = ex_ctx.symbols.get('idx')
-
-        if not isinstance(list_, List):
-            return RTResult().fail(RTError(
-                self.pos_start, self.pos_end, "First argument must be a list object", ex_ctx
-            ))
-
-        if not isinstance(idx, Number):
-            return RTResult().fail(RTError(
-                self.pos_start, self.pos_end, "Second argument must be a number", ex_ctx
-            ))
-        try:
-            element = list_.elements.pop(idx.value)
-        except:
-            return RTResult().fail(RTError(
-                self.pos_start, self.pos_end, "Could not remove element because index value is out of list range",
-                ex_ctx
-
-            ))
-
-    def execute_combine(self, ex_ctx):
-        list_A = ex_ctx.symbols.get("list_A")
-        list_B = ex_ctx.symbols.get("list_B")
-
-        if not isinstance(list_A, List):
-            return RTResult().fail(RTError(
-                self.pos_start, self.pos_end, "First argument must be a list", ex_ctx
-            ))
-
-        if not isinstance(list_B, List):
-            return RTResult().fail(RTError(
-                self.pos_start, self.pos_end, "Second argument must be a list", ex_ctx
-            ))
-
-        list_A.elements.extend(list_B.elements)
-        return RTResult().success(Number.null)
-
-    execute_combine.arg_names = ['list_A', 'list_B']
 
     def execute_len(self, ex_ctx):
         arg_ = ex_ctx.symbols.get('arg')
@@ -2005,6 +2010,7 @@ class Built_In_Functions(Main_Function):
             ))
 
     execute_len.arg_names = ["arg"]
+
 
     def execute_abs(self, ex_ctx):
         val = ex_ctx.symbols.get('val')
@@ -2190,9 +2196,6 @@ Built_In_Functions.is_num = Built_In_Functions('is_num')
 Built_In_Functions.is_str = Built_In_Functions('is_str')
 Built_In_Functions.is_list = Built_In_Functions('is_list')
 Built_In_Functions.is_func = Built_In_Functions('is_func')
-Built_In_Functions.append = Built_In_Functions('append')
-Built_In_Functions.pop = Built_In_Functions('pop')
-Built_In_Functions.combine = Built_In_Functions('combine')
 Built_In_Functions.is_bool = Built_In_Functions('is_bool')
 Built_In_Functions.len = Built_In_Functions('len')
 Built_In_Functions.run = Built_In_Functions('run')
@@ -2206,6 +2209,8 @@ Built_In_Functions.round_down = Built_In_Functions('round_down')
 Built_In_Functions.round_up = Built_In_Functions('round_up')
 Built_In_Functions.random = Built_In_Functions('random')
 Built_In_Functions.random_decimal = Built_In_Functions('random_decimal')
+Built_In_Functions.max_value = Built_In_Functions('max_value')
+Built_In_Functions.min_value = Built_In_Functions('min_value')
 
 
 
@@ -2250,6 +2255,16 @@ class String(Value):
         copy.set_pos(self.pos_start, self.pos_end)
         copy.set_context(self.ctx)
         return copy
+
+    def get_by(self, other):
+        if isinstance(other, Number):
+            try:
+                return String(self.value[other.value]), None
+            except:
+                return None, RTError(
+                    other.pos_start, other.pos_end,
+                    "Element could not be extracted because it's index value is out of bounds", self.ctx
+                )
 
     def __str__(self):
         return self.value
@@ -2655,8 +2670,8 @@ class Interpreter:
 
 GLOBAL_SYMBOLS = {
     "NONE": Number.null,
-    "FALSE": Boolean.false,
-    "TRUE": Boolean.true,
+    "False": Boolean.false,
+    "True": Boolean.true,
     "PI": Number.math_PI,
     "WRITE": Built_In_Functions.print,
     "WRITE_RETURN": Built_In_Functions.print_ret,
@@ -2669,9 +2684,6 @@ GLOBAL_SYMBOLS = {
     "IS_STRING": Built_In_Functions.is_str,
     "IS_LIST": Built_In_Functions.is_list,
     "IS_FUNCTION": Built_In_Functions.is_func,
-    "APPEND": Built_In_Functions.append,
-    "REMOVE": Built_In_Functions.pop,
-    "COMBINE": Built_In_Functions.combine,
     "LENGTH_OF": Built_In_Functions.len,
     "RUN": Built_In_Functions.run,
     "TO_STRING": Built_In_Functions.to_str,
@@ -2684,6 +2696,8 @@ GLOBAL_SYMBOLS = {
     "ROUND_UP": Built_In_Functions.round_up,
     "RANDOM" : Built_In_Functions.random,
     "RANDOM_DECIMAL": Built_In_Functions.random_decimal,
+    "MAX_VALUE": Built_In_Functions.max_value,
+    "MIN_VALUE": Built_In_Functions.min_value
 }
 
 # Set the global symbols using the dictionary
