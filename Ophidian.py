@@ -97,7 +97,7 @@ class Position:
 
 
 #######################################
-# TOKENS
+# TOKENS #
 #######################################
 
 # Data Types
@@ -109,6 +109,21 @@ TT_STRING = 'STRING'
 # Variables
 TT_IDENTIFIER = 'IDENTIFIER'
 TT_KEYWORD = 'KEYWORD'
+
+
+
+# Functions:
+TT_COMMA = 'COMMA'
+TT_COLON = ':'
+
+# Comparisons/Logical Operators
+
+TT_EE = 'EE'  # Double equal '=='
+TT_NE = 'NE'  # Not equal
+TT_LT = 'LT'  # Less than
+TT_LTE = 'LTE'  # Less than or equal
+TT_GT = 'GT'  # Greater than
+TT_GTE = 'GTE'  # Greater than or equal
 
 # Binary Operations
 TT_PLUS = 'PLUS'
@@ -124,19 +139,6 @@ TT_RPAREN = 'RPAREN'
 # Lists/Arrays
 TT_LBRACK = 'LBR'
 TT_RBRACK = 'RBR'
-
-# Functions:
-TT_COMMA = 'COMMA'
-TT_COLON = ':'
-
-# Comparisons/Logical Operators
-
-TT_EE = 'EE'  # Double equal '=='
-TT_NE = 'NE'  # Not equal
-TT_LT = 'LT'  # Less than
-TT_LTE = 'LTE'  # Less than or equal
-TT_GT = 'GT'  # Greater than
-TT_GTE = 'GTE'  # Greater than or equal
 
 # Misc.
 TT_NEWLINE = 'NEWLINE'
